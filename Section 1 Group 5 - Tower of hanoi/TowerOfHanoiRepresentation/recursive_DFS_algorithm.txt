@@ -1,0 +1,22 @@
+## ALGORITHM
+
+Given 3 number of rods A, B, and C and N number of discs. The goal is to move all N discs from the first rod A, to the
+third rod C using either rods as temporary storage.
+
+- Input N
+- Create a function that takes in 4 parameters: The number of discs, the source, destination, and temporary rod
+    - The function checks if the number of discs is equals 1
+        - if equals 1, move the 1st disc from the current source to the destination
+        - if not, run first recursion:
+            - The parameters would be number of discs - 1, the source, the temporary rod (New destination), and
+            - The parameters would be number of discs - 1, the source, the temporary rod (New destination), and
+              the current destination
+        - move the Nth disc from current source to the destination
+
+        - run second recursion:
+            - The parameters would be number of discs -1, the temporary rod(New source), the destination rod, and
+              the current source
+
+        - the recursion is run until all the discs are moved from rod A to rod C
+
+- Call the function

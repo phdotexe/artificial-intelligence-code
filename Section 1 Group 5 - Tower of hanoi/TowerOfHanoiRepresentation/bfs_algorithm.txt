@@ -1,0 +1,15 @@
+Create an empty queue
+Create an empty visited set
+Create a parent map to reconstruct the solution
+Enqueue the initial state
+Mark the initial state as visited
+While the queue is not empty:
+    -Dequeue the front state
+    -If the state is the goal, terminate
+    -Generate all legal next states by applying valid moves
+    -For each next state:
+        -If not visited:
+            -Mark visited
+            -Record parent and move
+            -Enqueue it
+            -Reconstruct the solution path from goal to start
