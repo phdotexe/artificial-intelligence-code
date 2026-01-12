@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rubik's Cube – DFS Visualization</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #0f172a;
+    color: #e5e7eb;
+    font-family: Arial;
+  }
+  #layout {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    height: 100vh;
+  }
+  #controls {
+    padding: 12px;
+    background: #020617;
+  }
+  button {
+    width: 100%;
+    margin: 6px 0;
+    padding: 10px;
+    background: #2563eb;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+  }
+  .info {
+    font-size: 13px;
+    margin-top: 10px;
+    color: #94a3b8;
+  }
+</style>
+</head>
+
+<body>
+<div id="layout">
+  <div id="scene"></div>
+
+  <div id="controls">
+    <h2>DFS Rubik’s Cube</h2>
+
+    <button onclick="scrambleCube()">Scramble Cube</button>
+    <button onclick="startDFS()">Start DFS</button>
+    <button onclick="stopDFS()">Stop DFS</button>
+
+    <div class="info">
+      <p><b>Current Path:</b> <span id="path">[]</span></p>
+      <p><b>Depth:</b> <span id="depth">0</span></p>
+      <p><b>Nodes Explored:</b> <span id="nodes">0</span></p>
+    </div>
+
+    <p class="info">
+      Allowed moves: R, U, F<br>
+      DFS explores one path deeply before backtracking.
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+
+<script>
+// ================= SCENE =================
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(6,6,6);
+camera.lookAt(0,0,0);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(window.innerWidth*0.75, window.innerHeight);
+document.getElementById("scene").appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff,1));
+
+// ================= RUBIK'S CUBE =================
+const cubies = [];
+const size = 0.95;
+
+const colors = [
+  new THREE.MeshBasicMaterial({color:0xff0000}), // R
+  new THREE.MeshBasicMaterial({color:0xffa500}), // L
+  new THREE.MeshBasicMaterial({color:0xffffff}), // U
+  new THREE.MeshBasicMaterial({color:0xffff00}), // D
+  new THREE.MeshBasicMaterial({color:0x00ff00}), // F
+  new THREE.MeshBasicMaterial({color:0x0000ff})  // B
+];
+
+for(let x=-1;x<=1;x++){
+  for(let y=-1;y<=1;y++){
+    for(let z=-1;z<=1;z++){
+      const cube = new THREE.Mesh(
+        new THREE.BoxGeometry(size,size,size),
+        colors
+      );
+      cube.position.set(x,y,z);
+      scene.add(cube);
+      cubies.push(cube);
+    }
+  }
+}
+
+// ================= ROTATION =================
+let isRotating=false;
+
+function rotateLayer(axis,index,clockwise=true){
+  return new Promise(resolve=>{
+    if(isRotating) return;
+    isRotating=true;
+
+    const group=new THREE.Group();
+    cubies.forEach(c=>{
+      if(Math.round(c.position[axis])===index) group.add(c);
+    });
+    scene.add(group);
+
+    const angle=(clockwise?-1:1)*Math.PI/2;
+    let step=0;
+
+    function spin(){
+      if(step<20){
+        group.rotation[axis]+=angle/20;
+        step++;
+        requestAnimationFrame(spin);
+      } else {
+        group.updateMatrixWorld();
+        while(group.children.length){
+          const c=group.children[0];
+          c.applyMatrix4(group.matrix);
+          c.position.x=Math.round(c.position.x);
+          c.position.y=Math.round(c.position.y);
+          c.position.z=Math.round(c.position.z);
+          scene.add(c);
+        }
+        scene.remove(group);
+        isRotating=false;
+        resolve();
+      }
+    }
+    spin();
+  });
+}
+
+// ================= MOVES =================
+async function applyMove(m){
+  if(m==="R") await rotateLayer("x",1,true);
+  if(m==="U") await rotateLayer("y",1,true);
+  if(m==="F") await rotateLayer("z",1,true);
+}
+async function undoMove(m){
+  if(m==="R") await rotateLayer("x",1,false);
+  if(m==="U") await rotateLayer("y",1,false);
+  if(m==="F") await rotateLayer("z",1,false);
+}
+
+// ================= DFS =================
+const MOVES=["R","U","F"];
+const MAX_DEPTH=3;
+let stop=false;
+let nodesExplored=0;
+
+async function dfs(depth,path){
+  if(stop) return;
+  nodesExplored++;
+  updateInfo(depth,path);
+
+  if(depth===MAX_DEPTH) return;
+
+  for(let move of MOVES){
+    if(stop) return;
+    await applyMove(move);
+    await sleep(400);
+    await dfs(depth+1,[...path,move]);
+    await undoMove(move);
+    await sleep(400);
+  }
+}
+
+function startDFS(){
+  stop=false;
+  nodesExplored=0;
+  dfs(0,[]);
+}
+
+function stopDFS(){
+  stop=true;
+}
+
+// ================= SCRAMBLE =================
+async function scrambleCube(){
+  const scramble=["R","U","F","R","U"];
+  for(let m of scramble){
+    await applyMove(m);
+    await sleep(300);
+  }
+}
+
+// ================= UI =================
+function updateInfo(d,p){
+  document.getElementById("depth").innerText=d;
+  document.getElementById("path").innerText=JSON.stringify(p);
+  document.getElementById("nodes").innerText=nodesExplored;
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function animate(){
+  requestAnimationFrame(animate);
+  renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>
