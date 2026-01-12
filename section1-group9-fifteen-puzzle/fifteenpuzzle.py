@@ -133,8 +133,54 @@ def print_board(state):
         print(' '.join(f'{state[j]:2}' if state[j] != 0 else ' .' for j in range(i, i + 4)))
     print()
 
+# def animate_pygame(start, solution, algorithm_name):
+#     """Animate the puzzle solution using Pygame and advance on mouse clicks.
+
+#     Args:
+#         start (tuple): Start puzzle state as a 16-element tuple (0 is empty).
+#         solution (list): List of moves ('U','D','L','R') to apply.
+#         algorithm_name (str): Name to display in the window title.
+#     """
+#     pygame.init()
+#     screen = pygame.display.set_mode((400, 450))
+#     pygame.display.set_caption(f"15 Puzzle - {algorithm_name} (Click for next step)")
+#     font = pygame.font.Font(None, 36)
+#     info_font = pygame.font.Font(None, 24)
+#     clock = pygame.time.Clock()
+#     current = start
+#     step = 0
+#     running = True
+#     while running:
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 running = False
+#             if event.type == pygame.MOUSEBUTTONDOWN and step < len(solution):
+#                 neighbors = get_neighbors(current)
+#                 for next_state, move in neighbors:
+#                     if move == solution[step]:
+#                         current = next_state
+#                         break
+#                 step += 1
+#         screen.fill((200, 200, 200))
+#         for i in range(16):
+#             row, col = i // 4, i % 4
+#             x, y = col * 100, row * 100
+#             if current[i] == 0:
+#                 pygame.draw.rect(screen, (100, 100, 100), (x, y, 100, 100))
+#             else:
+#                 pygame.draw.rect(screen, (255, 255, 255), (x, y, 100, 100))
+#                 pygame.draw.rect(screen, (0, 0, 0), (x, y, 100, 100), 2)
+#                 text = font.render(str(current[i]), True, (0, 0, 0))
+#                 text_rect = text.get_rect(center=(x + 50, y + 50))
+#                 screen.blit(text, text_rect)
+#         info_text = info_font.render(f"Step: {step}/{len(solution)}", True, (0, 0, 0))
+#         screen.blit(info_text, (10, 410))
+#         pygame.display.flip()
+#         clock.tick(60)
+#     pygame.quit()
+
 def animate_pygame(start, solution, algorithm_name):
-    """Animate the puzzle solution using Pygame and advance on mouse clicks.
+    """Animate the puzzle solution using Pygame with automatic progression.
 
     Args:
         start (tuple): Start puzzle state as a 16-element tuple (0 is empty).
@@ -143,24 +189,35 @@ def animate_pygame(start, solution, algorithm_name):
     """
     pygame.init()
     screen = pygame.display.set_mode((400, 450))
-    pygame.display.set_caption(f"15 Puzzle - {algorithm_name} (Click for next step)")
+    pygame.display.set_caption(f"15 Puzzle - {algorithm_name}")
     font = pygame.font.Font(None, 36)
     info_font = pygame.font.Font(None, 24)
     clock = pygame.time.Clock()
     current = start
     step = 0
     running = True
+    
+    # Animation timing
+    move_delay = 500  # milliseconds between moves
+    last_move_time = pygame.time.get_ticks()
+    
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN and step < len(solution):
-                neighbors = get_neighbors(current)
-                for next_state, move in neighbors:
-                    if move == solution[step]:
-                        current = next_state
-                        break
-                step += 1
+        
+        # Auto-advance to next step
+        current_time = pygame.time.get_ticks()
+        if step < len(solution) and current_time - last_move_time >= move_delay:
+            neighbors = get_neighbors(current)
+            for next_state, move in neighbors:
+                if move == solution[step]:
+                    current = next_state
+                    break
+            step += 1
+            last_move_time = current_time
+        
+        # Draw the puzzle
         screen.fill((200, 200, 200))
         for i in range(16):
             row, col = i // 4, i % 4
@@ -173,12 +230,21 @@ def animate_pygame(start, solution, algorithm_name):
                 text = font.render(str(current[i]), True, (0, 0, 0))
                 text_rect = text.get_rect(center=(x + 50, y + 50))
                 screen.blit(text, text_rect)
+        
+        # Draw step counter
         info_text = info_font.render(f"Step: {step}/{len(solution)}", True, (0, 0, 0))
         screen.blit(info_text, (10, 410))
+        
+        # Show completion message
+        if step >= len(solution):
+            complete_text = info_font.render("Complete! Close window to exit.", True, (0, 128, 0))
+            screen.blit(complete_text, (10, 430))
+        
         pygame.display.flip()
         clock.tick(60)
+    
     pygame.quit()
-
+    
 def main():
     """Simple command-line interface to scramble and solve the 15-puzzle.
 
