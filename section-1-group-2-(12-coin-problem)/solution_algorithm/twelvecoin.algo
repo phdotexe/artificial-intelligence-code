@@ -1,0 +1,75 @@
+// DEFINITIONS
+weigh(X, Y) → {LEFT_HEAVY, RIGHT_HEAVY, BALANCE}
+
+ROOT WEIGHING
+W1 = weigh({A1,A2,A3,A4}, {B1,B2,B3,B4})
+
+CASE W1 == BALANCE
+➡️ Fake ∈ C-group
+
+W2 = weigh({C1,C2,C3}, {A1,A2,A3})
+
+W2 == BALANCE → C4
+W3 = weigh(C4, A1)
+RETURN (C4, heavier) IF W3 == LEFT_HEAVY
+RETURN (C4, lighter)
+
+W2 == LEFT_HEAVY → C1/C2/C3 HEAVY
+W3 = weigh(C1, C2)
+RETURN (C1, heavier) IF W3 == LEFT_HEAVY
+RETURN (C2, heavier) IF W3 == RIGHT_HEAVY
+RETURN (C3, heavier)
+
+W2 == RIGHT_HEAVY → C1/C2/C3 LIGHT
+W3 = weigh(C1, C2)
+RETURN (C2, lighter) IF W3 == LEFT_HEAVY
+RETURN (C1, lighter) IF W3 == RIGHT_HEAVY
+RETURN (C3, lighter)
+
+CASE W1 == LEFT_HEAVY
+➡️ A-group HEAVY or B-group LIGHT
+
+W2 = weigh({A3,B1,B2,B4}, {C1,C2,B3,C4})
+
+W2 == BALANCE → A1/A2/A4 HEAVY
+W3 = weigh(A1, A2)
+RETURN (A1, heavier) IF W3 == LEFT_HEAVY
+RETURN (A2, heavier) IF W3 == RIGHT_HEAVY
+RETURN (A4, heavier)
+
+W2 == LEFT_HEAVY → A3 HEAVY or B3/C4 LIGHT
+W3 = weigh(B3, C4)
+RETURN (C4, lighter) IF W3 == LEFT_HEAVY
+RETURN (B3, lighter) IF W3 == RIGHT_HEAVY
+RETURN (A3, heavier)
+
+W2 == RIGHT_HEAVY → B1/B2/B4 LIGHT
+W3 = weigh(B1, B2)
+RETURN (B2, lighter) IF W3 == LEFT_HEAVY
+RETURN (B1, lighter) IF W3 == RIGHT_HEAVY
+RETURN (B4, lighter)
+
+CASE W1 == RIGHT_HEAVY
+
+➡️ B-group HEAVY or A-group LIGHT
+(perfect mirror — structure identical)
+
+W2 = weigh({B3,A1,A2,A4}, {C1,C2,A3,C4})
+
+W2 == BALANCE → B1/B2/B4 HEAVY
+W3 = weigh(B1, B2)
+RETURN (B1, heavier) IF W3 == LEFT_HEAVY
+RETURN (B2, heavier) IF W3 == RIGHT_HEAVY
+RETURN (B4, heavier)
+
+W2 == LEFT_HEAVY → B3 HEAVY or A3/C4 LIGHT
+W3 = weigh(A3, C4)
+RETURN (C4, lighter) IF W3 == LEFT_HEAVY
+RETURN (A3, lighter) IF W3 == RIGHT_HEAVY
+RETURN (B3, heavier)
+
+W2 == RIGHT_HEAVY → A1/A2/A4 LIGHT
+W3 = weigh(A1, A2)
+RETURN (A2, lighter) IF W3 == LEFT_HEAVY
+RETURN (A1, lighter) IF W3 == RIGHT_HEAVY
+RETURN (A4, lighter)
