@@ -1,0 +1,84 @@
+Refined Solution: 
+PROCEDURE SolveSENDMOREMONEYBacktracking()
+
+    Initialize:
+        letters ← ['S', 'E', 'N', 'D', 'M', 'O', 'R', 'Y']
+        solution ← empty dictionary (letter → digit)
+        used_digits ← empty set
+        steps ← 0
+
+    FUNCTION word_to_number(word, assignment):
+        value ← 0
+        FOR each letter in word:
+            value ← value * 10 + assignment[letter]
+        RETURN value
+
+    FUNCTION is_consistent(assignment):
+        // Leading zero check
+        IF S exists and S = 0 THEN return false
+        IF M exists and M = 0 THEN return false
+
+        // Early check on units column (most constraining)
+        IF D, E, Y are all assigned:
+            IF (D + E) mod 10 ≠ Y THEN
+                return false
+
+        RETURN true
+
+    FUNCTION display_state(message):
+        Clear screen
+        Print title: "Cryptarithmetic Solver – Backtracking"
+        Print "Current assignment:"
+        FOR each letter in letters:
+            Print letter: solution[letter] or '_'   (separated by spaces)
+        Print blank line
+        Print current message/action
+        Pause 0.4 seconds
+
+    FUNCTION backtrack(index):
+        steps ← steps + 1
+
+        // Base case: all letters assigned
+        IF index == length(letters):
+            SEND  ← word_to_number("SEND", solution)
+            MORE  ← word_to_number("MORE", solution)
+            MONEY ← word_to_number("MONEY", solution)
+            RETURN (SEND + MORE == MONEY)
+
+        current_letter ← letters[index]
+
+        FOR digit from 0 to 9:
+            IF digit is already used:
+                continue
+
+            solution[current_letter] ← digit
+            used_digits.add(digit)
+
+            display_state("Trying " + current_letter + " = " + digit)
+
+            IF is_consistent(solution):
+                display_state("✓ Accepted " + current_letter + " = " + digit)
+
+                IF backtrack(index + 1) is true:
+                    RETURN true
+            ELSE:
+                display_state("✗ Rejected " + current_letter + " = " + digit)
+
+            // Backtrack (undo)
+            remove solution[current_letter]
+            used_digits.remove(digit)
+            display_state("↩ Backtracking on " + current_letter)
+
+        RETURN false
+
+    // Start the search
+    backtrack(0)
+
+    // When solution is found:
+    Print "Solution:"
+    FOR each letter in solution:
+        Print letter + " = " + solution[letter]
+
+    Print "Search steps: " + steps
+
+END PROCEDURE

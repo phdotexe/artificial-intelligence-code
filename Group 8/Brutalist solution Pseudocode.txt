@@ -1,0 +1,43 @@
+First Pseudocode : 
+
+import os 
+import random 
+os.system('cls' if os.name == 'nt' else 'clear')
+
+print("Cryptarithmetic Puzzle Solver")
+
+count = 0
+
+while True:
+    count += 1
+
+    digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    random.shuffle(digits)
+
+    S = digits.pop()
+    E = digits.pop()
+    N = digits.pop()
+    D = digits.pop()
+    M = digits.pop()
+    O = digits.pop()
+    R = digits.pop()
+    Y = digits.pop()
+    # Constraints
+    if S == 0:
+        continue
+    if M == 0:
+        continue
+
+    SEND = S * 1000 + E * 100 + N * 10 + D
+    MORE = M * 1000 + O * 100 + R * 10 + E
+    MONEY = M * 10000 + O * 1000 + N * 100 + E * 10 + Y
+
+    if SEND + MORE == MONEY:
+        break
+
+print(f"      {S} {E} {N} {D}")
+print(f" +    {M} {O} {R} {E}")
+print("-------------------------")
+print(f"   {M} {O} {N} {E} {Y}")
+print()
+print(f"Count: {count}")
